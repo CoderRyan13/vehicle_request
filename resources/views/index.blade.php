@@ -14,6 +14,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 </head>
 <body class="bg-black">
     <div class="d-flex align-items-center justify-content-center flex-column" style="height: 95vh;">
@@ -51,7 +53,13 @@
             </div>
         </div>
     </div>
-    <span class="d-flex justify-content-end"><a href="{{ url('/admin') }}" class="text-decoration-none text-black me-2">Admin</a></span>
+    <span class="d-flex justify-content-end"><a href="{{ url('/admin') }}" target="_blank" class="text-decoration-none text-black me-2 fs-4">Admin</a></span>
+
+    <div class="container-fluid bg-white ms-5" style="width: 95%;">
+        <h2 class="text-primary">Calendar</h2>
+
+        <div id='calendar'></div>
+    </div>
 
     <div class="toast-container position-fixed top-0 end-0 p-3">
         <div id="toastAlert" class="toast colored-toast" role="alert" aria-live="assertive" aria-atomic="true">
@@ -94,8 +102,36 @@
         toast.show();
     }
 
+    let cal = [];
+
     $(document)
         .ready(function(e) {
+            $.ajax({
+				type		: 'POST',
+				url		: "{{url ('/')}}/get_approved",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+				dataType	: 'json',
+				success	: function (data) {
+                    $.each(data, function(key, val) {
+                        let veh_num = val.approved_vehicle.slice(-3);
+                        cal.push({ title: `${val.driver} ( ${veh_num} )`, start: `${val.timeout_date}` },);
+                    });
+
+                    var calendarEl = document.getElementById('calendar');
+                    var calendar = new FullCalendar.Calendar(calendarEl, { 
+                        initialView: 'dayGridMonth' ,
+                        events: cal,
+                    });
+                    calendar.render();
+				},
+				error		: function (request, status, error) {
+					console.log (request.status, request.responseText);
+				},
+				async		: false
+			});
+
             flatpickr("#date", {});
             flatpickr("#datetime", {
                 enableTime: true,
@@ -169,16 +205,18 @@
 				success	: function (data) {
                     if (data.trim() == 'f') {
                         display_alert ('Request Vehicle', 'All mandatory fields required.', 3);
-                        setTimeout("location.href = '/';",2500);
+                        $('.submit').prop( "disabled", false);
+                        // setTimeout("location.href = '/';",2500);
                     } else if (data.trim() == 'p') {
                         display_alert ('Request Vehicle', 'Cannot use a date and time that has already passed to request a vehicle.', 3);
-                        setTimeout("location.href = '/';",2500);
+                        $('.submit').prop( "disabled", false);
+                        // setTimeout("location.href = '/';",2500);
                     } else if (data.trim() == 's') {
                         display_alert ('Request Vehicle', 'Your vehicle was requested successfully.', 1);
-                        setTimeout("location.href = '/';",2500);
+                        setTimeout("location.href = '/';",3000);
                     } else if (data.trim() == 'e') {
                         display_alert ('Request Vehicle', 'Your vehicle could not be requested at this moment.', 0);
-                        setTimeout("location.href = '/';",2500);
+                        setTimeout("location.href = '/';",3000);
                     }
 				},
 				error		: function (request, status, error) {

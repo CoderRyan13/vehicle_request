@@ -19,6 +19,8 @@ use App\Http\Controllers\AuthCtrl;
  // Get Supervisors 
  Route::post('/get_all_supervisors', [SupervisorCtrl::class, 'get_all_supervisors']);
 
+ Route::post('/get_approved', [RequestVehicleCtrl::class, 'get_approved']);
+
 Route::middleware('auth')->group(function(){
     // Views
     Route::view('/admin', 'admin');
@@ -30,7 +32,7 @@ Route::middleware('auth')->group(function(){
     // Request Vehicle
     Route::post('/get_request', [RequestVehicleCtrl::class, 'get_request']);
     Route::post('/get_requests', [RequestVehicleCtrl::class, 'get_requests']);
-    Route::post('/get_approved', [RequestVehicleCtrl::class, 'get_approved']);
+    
     Route::post('/get_denied', [RequestVehicleCtrl::class, 'get_denied']);
     Route::post('/get_all_requests', [RequestVehicleCtrl::class, 'get_all_requests']);
     Route::post('/approve_vehicle', [RequestVehicleCtrl::class, 'approve_vehicle']);

@@ -85,9 +85,21 @@ class RequestVehicleCtrl extends Controller
         ");
 
         $sup_email = $email[0]->supervisor_email;
+
+        $destination = DB::select("SELECT destination FROM vehicle_request WHERE id = $id");
+        $purpose = DB::select("SELECT purpose FROM vehicle_request WHERE id = $id");
+        $driver = DB::select("SELECT driver FROM vehicle_request WHERE id = $id");
+
+        // dd($destination);
         
         if (DB::table('public.vehicle_request')->where ('id', $id)->update($updates)) {
-            $data = ['vehicle' => $request->vehicle];
+            $data = [
+                'vehicle'     => $request->vehicle,
+                'destination' => $destination[0]->destination,
+                'purpose'     => $purpose[0]->purpose,
+                'driver'      => $driver[0]->driver,
+                'supervisor'  => $supervisor
+            ];
 
             Mail::send('mail.email-approve', $data, function($message) use($sup_email) {
                 $message->to($sup_email, 'Response')->subject("Vehicle Request Response");
